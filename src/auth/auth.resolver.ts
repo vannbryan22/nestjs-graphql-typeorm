@@ -11,16 +11,6 @@ import { User } from 'src/user/entities/user.entity';
 export class AuthResolver {
   constructor(private readonly authService: AuthService) {}
 
-  // @Mutation(() => LoginResponse)
-  // @UseGuards(GqlAuthGuard)
-  // async login(
-  //   @Args('loginUserInput') loginUserInput: LoginUserInput,
-  //   @Context() context,
-  // ): Promise<LoginResponse> {
-  //   const authenticated = await this.authService.login(context.user);
-  //   return authenticated;
-  // }
-
   @Mutation(() => LoginResponse)
   @UseGuards(GqlAuthGuard)
   async login(
