@@ -10,6 +10,7 @@ import { NewUserInput } from 'src/user/dto/new-user.input';
 import { AuthValidator } from './auth.validator';
 import { ApolloError } from 'apollo-server-express';
 import * as bcrypt from 'bcrypt';
+import { UserService } from 'src/user/user.service';
 
 @Injectable()
 export class AuthService extends CommonService {
@@ -18,6 +19,7 @@ export class AuthService extends CommonService {
     public userRepository: Repository<User>,
     private jwtService: JwtService,
     private authValidator: AuthValidator,
+    private userService: UserService,
   ) {
     super();
   }
@@ -81,6 +83,28 @@ export class AuthService extends CommonService {
       if (password && password.length < 8) {
         errors.password = 'Password must at least 8 characters';
       }
+    }
+
+    const userFoundWithPassword = await this.userService.findOneWithPassword(
+      username,
+    );
+
+    if (isEmpty(userFoundWithPassword)) {
+      errors.username = 'User not found';
+      throw new ApolloError(JSON.stringify(errors), 'BAD_USER_INPUT');
+    }
+
+    const isMatch = await bcrypt.compare(
+      password,
+      userFoundWithPassword?.password,
+    );
+
+    if (userFoundWithPassword && isMatch) {
+      const userFound = await this.userService.findOne(username);
+      return userFound;
+    } else {
+      errors.password = 'Wrong password';
+      throw new ApolloError(JSON.stringify(errors), 'BAD_USER_INPUT');
     }
   }
 }
